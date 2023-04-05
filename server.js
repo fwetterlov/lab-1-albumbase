@@ -30,15 +30,21 @@ app.get('/api/albums', (req, res) => {
       html += '<tbody>';
       albums.forEach((album) => {
         html += `<tr><td>${album.title}</td><td>${album.artist}</td><td>${album.year}</td>`;
-        html += `<td><button onclick="updateAlbum('${album._id}')">Update</button>`;
+        html += `<td><button onclick="editAlbum('${album._id}', '${album.title}', '${album.artist}', '${album.year}')">Edit</button>`;
         html += `<button onclick="deleteAlbum('${album._id}')">Delete</button></td>`;
+        html += `<td><div id="album-${album._id}"></div></td>`;
         html += '</tr>';
       });
       html += '</tbody>';
       html += '</table>';
       html += '<script>';
-      html += 'function updateAlbum(id) {';
-      html += 'console.log("Update Album ID:", id);';
+      html += 'function editAlbum(id, title, artist, year) {';
+      html += 'const albumDiv = document.getElementById(`album-${id}`);';
+      html += 'albumDiv.innerHTML = `<label for="title-${id}">Title:</label> <input type="text" id="title-${id}" value="${title}"><br>';
+      html += '<label for="artist-${id}">Artist:</label> <input type="text" id="artist-${id}" value="${artist}"><br>';
+      html += '<label for="year-${id}">Year:</label> <input type="text" id="year-${id}" value="${year}"><br>';
+      html += '<button onclick="saveAlbumChanges()">Update</button> ';
+      html += '<button onclick="cancelAlbumChanges()">Cancel</button>`;';
       html += '}';
       html += 'function deleteAlbum(id) {';
       html += 'fetch("/api/albums/" + id, { method: "DELETE" })';
@@ -58,6 +64,10 @@ app.get('/api/albums', (req, res) => {
       html += '})';
       html += '.then(() => window.location.reload())';
       html += '.catch((err) => console.error(err));';
+      html += '}';
+      html += 'function cancelAlbumChanges(id) {';
+      html += 'const albumDiv = document.getElementById(`album-${id}`);';
+      html += 'if (albumDiv) { albumDiv.innerHTML = ""; }';
       html += '}';
       html += '</script>';
       res.send(html);
