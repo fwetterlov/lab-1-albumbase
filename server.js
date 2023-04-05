@@ -3,6 +3,9 @@ const app = express()
 require("dotenv").config()
 const getAlbums = require("./database")
 const Album = require("./Album")
+const bodyParser = require('body-parser');
+
+app.use(bodyParser.json());
 
 app.listen(process.env.PORT, () => {
   console.log("Server listening on port: " + process.env.PORT);
@@ -12,6 +15,16 @@ app.get('/api/albums', (req, res) => {
   Album.find()
     .then((albums) => {
       let html = '<h1>Albums</h1>';
+      html += '<div>';
+      html += '<h2>Add Album</h2>';
+      html += '<label for="title">Title:</label>';
+      html += '<input type="text" id="title" name="title">';
+      html += '<label for="artist">Artist:</label>';
+      html += '<input type="text" id="artist" name="artist">';
+      html += '<label for="year">Year:</label>';
+      html += '<input type="text" id="year" name="year">';
+      html += '<button onclick="addAlbum()">Add Album</button>';
+      html += '</div>';
       html += '<table>';
       html += '<thead><tr><th>Title</th><th>Artist</th><th>Year</th><th>Action</th></tr></thead>';
       html += '<tbody>';
@@ -23,10 +36,61 @@ app.get('/api/albums', (req, res) => {
       });
       html += '</tbody>';
       html += '</table>';
+      html += '<script>';
+      html += 'function updateAlbum(id) {';
+      html += 'console.log("Update Album ID:", id);';
+      html += '}';
+      html += 'function deleteAlbum(id) {';
+      html += 'fetch("/api/albums/" + id, { method: "DELETE" })';
+      html += '.then(() => window.location.reload())';
+      html += '.catch((err) => console.error(err));';
+      html += '}';
+      html += 'function addAlbum() {';
+      html += 'const title = document.getElementById("title").value;';
+      html += 'const artist = document.getElementById("artist").value;';
+      html += 'const year = document.getElementById("year").value;';
+      html += 'fetch("/api/albums", {';
+      html += 'method: "POST",';
+      html += 'headers: {';
+      html += '"Content-Type": "application/json"';
+      html += '},';
+      html += 'body: JSON.stringify({ title, artist, year })';
+      html += '})';
+      html += '.then(() => window.location.reload())';
+      html += '.catch((err) => console.error(err));';
+      html += '}';
+      html += '</script>';
       res.send(html);
     })
     .catch((e) => {
       console.error(e);
       res.status(500).json({ message: 'Error retrieving albums' });
+    });
+});
+
+app.delete('/api/albums/:id', (req, res) => {
+  const { id } = req.params;
+  Album.findByIdAndDelete(id)
+    .then(() => {
+      console.log(`Album with ID ${id} deleted`);
+      res.sendStatus(204);
+    })
+    .catch((e) => {
+      console.error(e);
+      res.status(500).json({ message: `Error deleting album with ID ${id}` });
+    });
+});
+
+app.post('/api/albums', (req, res) => {
+  const { title, artist, year } = req.body;
+  const album = new Album({ title, artist, year });
+  album.save()
+    .then(() => {
+      console.log('Album added successfully');
+      res.sendStatus(201);
+    })
+    .catch((e) => {
+      console.error(e);
+      res.status(500).json({ message: 'Error adding album' });
     });
 });
