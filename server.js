@@ -14,80 +14,129 @@ app.listen(process.env.PORT, () => {
 app.get('/api/albums', (req, res) => {
   Album.find()
     .then((albums) => {
-      let html = '<h1>Albums</h1>';
-      html += '<div>';
-      html += '<h2>Add Album</h2>';
-      html += '<label for="title">Title:</label>';
-      html += '<input type="text" id="title" name="title">';
-      html += '<label for="artist">Artist:</label>';
-      html += '<input type="text" id="artist" name="artist">';
-      html += '<label for="year">Year:</label>';
-      html += '<input type="text" id="year" name="year">';
-      html += '<button onclick="addAlbum()">Add Album</button>';
-      html += '</div>';
-      html += '<table>';
-      html += '<thead><tr><th>Title</th><th>Artist</th><th>Year</th><th>Action</th></tr></thead>';
-      html += '<tbody>';
+      let html = "";
+      html += /*html*/`
+      <h1>Albums</h1>
+      <div>
+        <h2>Add Album</h2>
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title">
+        <label for="artist">Artist:</label>
+        <input type="text" id="artist" name="artist">
+        <label for="year">Year:</label>
+        <input type="text" id="year" name="year">
+        <button onclick="addAlbum()">Add Album</button>
+      </div>
+      <table>
+      <thead><tr><th>Title</th><th>Artist</th><th>Year</th><th>Action</th></tr></thead>
+      <tbody>
+      `;
       albums.forEach((album) => {
-        html += `<tr><td>${album.title}</td><td>${album.artist}</td><td>${album.year}</td>`;
-        html += `<td><button onclick="editAlbum('${album._id}', '${album.title}', '${album.artist}', '${album.year}')">Edit</button>`;
-        html += `<button onclick="deleteAlbum('${album._id}')">Delete</button></td>`;
-        html += `<td><div id="album-${album._id}"></div></td>`;
-        html += '</tr>';
+        html += /*html*/`
+      <tr><td>${album.title}</td><td>${album.artist}</td><td>${album.year}</td>
+      <td><button onclick="editAlbum('${album._id}', '${album.title}', '${album.artist}', '${album.year}')">Edit</button>
+      <button onclick="deleteAlbum('${album._id}')">Delete</button>
+      <button onclick="showAlbumDetails('${album.title}')">Details</button></td>
+      <td><button onclick="saveAlbumChanges('${album._id}')">Update</button></td>
+      <td><div id="album-${album._id}"></div></td>
+      </tr>
+      `;
+        html += `<script>
+        function editAlbum(id, title, artist, year) {
+          const albumDiv = document.getElementById('album-' + id);
+          console.log(typeof id);
+          console.log(title);
+          console.log(artist);
+          console.log(year);
+          albumDiv.innerHTML =
+          '<label for="title-' + id + '">Title:</label> <input type="text" id="title-' + id + '" value="' + title + '">' +
+          '<label for="artist-' + id + '">Artist:</label> <input type="text" id="artist-' + id + '" value="' + artist + '">' +
+          '<label for="year-' + id + '">Year:</label> <input type="text" id="year-' + id + '" value="' + year + '">';    
+        }
+      </script>`;
       });
       html += '</tbody>';
       html += '</table>';
       html += '<script>';
-      html += 'function editAlbum(id, title, artist, year) {';
-      html += 'const albumDiv = document.getElementById(`album-${id}`);';
-      html += 'albumDiv.innerHTML = `<label for="title-${id}">Title:</label> <input type="text" id="title-${id}" value="${title}"><br>';
-      html += '<label for="artist-${id}">Artist:</label> <input type="text" id="artist-${id}" value="${artist}"><br>';
-      html += '<label for="year-${id}">Year:</label> <input type="text" id="year-${id}" value="${year}"><br>';
-      html += '<button onclick="saveAlbumChanges()">Update</button> ';
-      html += '<button onclick="cancelAlbumChanges()">Cancel</button>`;';
-      html += '}';
-      html += 'function deleteAlbum(id) {';
-      html += 'fetch("/api/albums/" + id, { method: "DELETE" })';
-      html += '.then(() => window.location.reload())';
-      html += '.catch((err) => console.error(err));';
-      html += '}';
-      html += 'function addAlbum() {';
-      html += 'const title = document.getElementById("title").value;';
-      html += 'const artist = document.getElementById("artist").value;';
-      html += 'const year = document.getElementById("year").value;';
-      html += 'fetch("/api/albums", {';
-      html += 'method: "POST",';
-      html += 'headers: {';
-      html += '"Content-Type": "application/json"';
-      html += '},';
-      html += 'body: JSON.stringify({ title, artist, year })';
-      html += '})';
-      html += '.then(() => window.location.reload())';
-      html += '.catch((err) => console.error(err));';
-      html += '}';
-      html += 'function cancelAlbumChanges(id) {';
-      html += 'const albumDiv = document.getElementById(`album-${id}`);';
-      html += 'if (albumDiv) { albumDiv.innerHTML = ""; }';
-      html += '}';
+      html += /*html*/`
+        function editAlbum(id, title, artist, year) {
+          const albumDiv = document.getElementById('album-' + id);
+          console.log(typeof id)
+          console.log(title)
+          console.log(artist)
+          console.log(year)
+          albumDiv.innerHTML =
+          '<label for="title-' + id + '">Title:</label> <input type="text" id="title-' + id + '" value="' + title + '">' +
+          '<label for="artist-' + id + '">Artist:</label> <input type="text" id="artist-' + id + '" value="' + artist + '">' +
+          '<label for="year-' + id + '">Year:</label> <input type="text" id="year-' + id + '" value="' + year + '">';    
+        }`;
+      html += /*html*/`
+        function deleteAlbum(id) {
+        fetch("/api/albums/" + id, { method: "DELETE" })
+          .then(() => window.location.reload())
+          .catch((err) => console.error(err));
+      }`;
+      html += /*html*/`
+        function addAlbum() {
+          const title = document.getElementById("title").value;
+          const artist = document.getElementById("artist").value;
+          const year = document.getElementById("year").value;
+          fetch("/api/albums", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ title, artist, year })
+          })
+          .then(() => window.location.reload())
+          .catch((err) => console.error(err));
+        }
+      `;
+      html += /*html*/`
+        function saveAlbumChanges(id) {
+          console.log(id)
+          console.log("test")
+
+          const title = document.getElementById('title-' + id).value;
+          const artist = document.getElementById('artist-' + id).value;
+          const year = document.getElementById('year-' + id).value;
+            
+          if (title && artist && year) {
+            fetch('/api/albums/' + id, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ title, artist, year })
+            })
+            .then(() => {
+              console.log('Album ' + id + ' updated successfully');
+              window.location.reload();
+            })
+            .catch(console.error);
+          } else {
+            console.error('Could not find elements with IDs "title-' + id + '", "artist-' + id + '", and/or "year-' + id + '"');
+          }
+        }
+        `;
+      html += /*html*/`
+        function cancelAlbumChanges(id) {
+        const albumDiv = document.getElementById(id)
+        if (albumDiv) { albumDiv.innerHTML = ""; }
+        }
+      `;
+      html += /*html*/`
+        function showAlbumDetails(title) {
+          fetch('/api/albums/' + title)
+            .then((response) => response.json())
+            .then((album) => console.log(album))
+            .catch((error) => console.error(error));
+        }
+      `;
       html += '</script>';
       res.send(html);
     })
     .catch((e) => {
       console.error(e);
       res.status(500).json({ message: 'Error retrieving albums' });
-    });
-});
-
-app.delete('/api/albums/:id', (req, res) => {
-  const { id } = req.params;
-  Album.findByIdAndDelete(id)
-    .then(() => {
-      console.log(`Album with ID ${id} deleted`);
-      res.sendStatus(204);
-    })
-    .catch((e) => {
-      console.error(e);
-      res.status(500).json({ message: `Error deleting album with ID ${id}` });
     });
 });
 
@@ -102,5 +151,84 @@ app.post('/api/albums', (req, res) => {
     .catch((e) => {
       console.error(e);
       res.status(500).json({ message: 'Error adding album' });
+    });
+});
+
+app.route('/api/albums/:id')
+  .get((req, res) => {
+    const { id } = req.params;
+    Album.findById(id)
+      .then((album) => {
+        if (!album) {
+          res.status(404).json({ message: `Album with ID ${id} not found` });
+          return;
+        }
+        res.status(200).json(album);
+      })
+      .catch((e) => {
+        console.error(e);
+        res.status(500).json({ message: `Error retrieving album with ID ${id}` });
+      });
+  })
+  .post((req, res) => {
+    const { title, artist, year } = req.body;
+    const newAlbum = new Album({ title, artist, year });
+    newAlbum.save()
+      .then((savedAlbum) => {
+        console.log(`Album ${savedAlbum._id} saved successfully`);
+        res.status(201).json(savedAlbum);
+      })
+      .catch((e) => {
+        console.error(e);
+        res.status(500).json({ message: 'Error saving album' });
+      });
+  })
+  .put((req, res) => {
+    const { title, artist, year } = req.body;
+    const albumId = req.params.id;
+    Album.findByIdAndUpdate(albumId, { title, artist, year }, { new: true })
+      .then((updatedAlbum) => {
+        if (!updatedAlbum) {
+          res.status(404).json({ message: `Album with ID ${albumId} not found` });
+          return;
+        }
+        console.log(`Album ${albumId} updated successfully`);
+        res.status(200).json(updatedAlbum);
+      })
+      .catch((e) => {
+        console.error(e);
+        res.status(500).json({ message: `Error updating album with ID ${albumId}` });
+      });
+  })
+  .delete((req, res) => {
+    const { id } = req.params;
+    Album.findByIdAndDelete(id)
+      .then((deletedAlbum) => {
+        if (!deletedAlbum) {
+          res.status(404).json({ message: `Album with ID ${id} not found` });
+          return;
+        }
+        console.log(`Album with ID ${id} deleted`);
+        res.sendStatus(204);
+      })
+      .catch((e) => {
+        console.error(e);
+        res.status(500).json({ message: `Error deleting album with ID ${id}` });
+      });
+  });
+
+app.get('/api/albums/:title', (req, res) => {
+  const title = req.params.title;
+  Album.find({ title: title })
+    .then((albums) => {
+      if (!albums || albums.length === 0) {
+        res.status(404).json({ message: `Albums with title '${title}' not found` });
+        return;
+      }
+      res.status(200).json(albums);
+    })
+    .catch((e) => {
+      console.error(e);
+      res.status(500).json({ message: `Error retrieving albums with title '${title}'` });
     });
 });
