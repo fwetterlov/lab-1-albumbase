@@ -14,6 +14,12 @@ const albumSchema = new mongoose.Schema({
     min: 1880,
     max: new Date().getFullYear(),
     required: true,
+    validate: {
+      validator: function (value) {
+        return Number.isInteger(value);
+      },
+      message: props => `${props.value} is not a valid year!`
+    }
   }
 });
 

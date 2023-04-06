@@ -16,9 +16,8 @@ app.get('/api/albums', (req, res) => {
     .then((albums) => {
       let html = "";
       html += /*html*/`
-      <h1>Albums</h1>
       <div>
-        <h2>Add Album</h2>
+        <h2>Albums</h2>
         <label for="title">Title:</label>
         <input type="text" id="title" name="title">
         <label for="artist">Artist:</label>
@@ -34,10 +33,11 @@ app.get('/api/albums', (req, res) => {
       albums.forEach((album) => {
         html += /*html*/`
       <tr><td>${album.title}</td><td>${album.artist}</td><td>${album.year}</td>
-      <td><button onclick="editAlbum('${album._id}', '${album.title}', '${album.artist}', '${album.year}')">Edit</button>
+      <td>
       <button onclick="deleteAlbum('${album._id}')">Delete</button>
-      <button onclick="showAlbumDetails('${album.title}')">Details</button></td>
-      <td><button onclick="saveAlbumChanges('${album._id}')">Update</button></td>
+      <button onclick="showAlbumDetails('${album._id}')">Details</button>
+      <button onclick="editAlbum('${album._id}', '${album.title}', '${album.artist}', '${album.year}')">Edit</button></td>
+      <td><button onclick="saveAlbumChanges('${album._id}')">Submit changes</button></td>
       <td><div id="album-${album._id}"></div></td>
       </tr>
       `;
@@ -89,7 +89,10 @@ app.get('/api/albums', (req, res) => {
             body: JSON.stringify({ title, artist, year })
           })
           .then(() => window.location.reload())
-          .catch((err) => console.error(err));
+          .catch((err) => {
+            console.error(err);
+            console.log("Failed to add album!");
+          });
         }
       `;
       html += /*html*/`
@@ -219,7 +222,7 @@ app.route('/api/albums/:id')
 
 app.get('/api/albums/:title', (req, res) => {
   const title = req.params.title;
-  Album.find({ title: title })
+  Album.findOne({ title: title })
     .then((albums) => {
       if (!albums || albums.length === 0) {
         res.status(404).json({ message: `Albums with title '${title}' not found` });
