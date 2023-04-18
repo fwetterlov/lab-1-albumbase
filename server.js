@@ -35,7 +35,7 @@ app.get('/api/albums', (req, res) => {
       <tr><td>${album.title}</td><td>${album.artist}</td><td>${album.year}</td>
       <td>
       <button onclick="deleteAlbum('${album._id}')">Delete</button>
-      <button onclick="showAlbumDetails('${album._id}')">Details</button>
+      <button onclick="showAlbumDetails('${album.title}')">Details</button>
       <button onclick="editAlbum('${album._id}', '${album.title}', '${album.artist}', '${album.year}')">Edit</button></td>
       <td><button onclick="saveAlbumChanges('${album._id}')">Submit changes</button></td>
       <td><div id="album-${album._id}"></div></td>
@@ -56,6 +56,7 @@ app.get('/api/albums', (req, res) => {
       </script>`;
       });
       html += '</tbody>';
+      html += '<div id="album-details"></div>'
       html += '</table>';
       html += '<script>';
       html += /*html*/`
@@ -77,24 +78,24 @@ app.get('/api/albums', (req, res) => {
           .catch((err) => console.error(err));
       }`;
       html += /*html*/`
-        function addAlbum() {
-          const title = document.getElementById("title").value;
-          const artist = document.getElementById("artist").value;
-          const year = document.getElementById("year").value;
-          fetch("/api/albums", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ title, artist, year })
-          })
-          .then(() => window.location.reload())
-          .catch((err) => {
-            console.error(err);
-            console.log("Failed to add album!");
-          });
-        }
-      `;
+      function addAlbum() {
+        const title = document.getElementById("title").value;
+        const artist = document.getElementById("artist").value;
+        const year = document.getElementById("year").value;
+        fetch("/api/albums", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ title, artist, year })
+        })
+        .then(() => window.location.reload())
+        .catch((err) => {
+          console.error(err);
+          console.log("Failed to add album!");
+        });
+      }
+    `;
       html += /*html*/`
         function saveAlbumChanges(id) {
           console.log(id)
@@ -126,14 +127,26 @@ app.get('/api/albums', (req, res) => {
         if (albumDiv) { albumDiv.innerHTML = ""; }
         }
       `;
-      html += /*html*/`
+      html += /*html*/
         function showAlbumDetails(title) {
           fetch('/api/albums/' + title)
             .then((response) => response.json())
-            .then((album) => console.log(album))
+            .then((album) => {
+              const albumDetails = document.getElementById('album-details');
+              albumDetails.innerHTML = `
+                <p> Title: ${album.title}</p>
+                <p>Artist: ${album.artist}</p>
+                <p>Year: ${album.year}</p>
+                <button onclick="cancelAlbumDetails('${album.title}')">Cancel details</button>
+              `;
+            })
             .catch((error) => console.error(error));
         }
-      `;
+      html += /*html*/
+        function cancelAlbumDetails(title) {
+          const albumDiv = document.getElementById('album-details');
+          if (albumDiv) { albumDiv.innerHTML = ""; }
+        }
       html += '</script>';
       res.send(html);
     })
@@ -154,6 +167,22 @@ app.post('/api/albums', (req, res) => {
     .catch((e) => {
       console.error(e);
       res.status(500).json({ message: 'Error adding album' });
+    });
+});
+
+app.get('/api/albums/:title', (req, res) => {
+  const title = req.params.title;
+  Album.findOne({ title: title })
+    .then((albums) => {
+      if (!albums || albums.length === 0) {
+        res.status(404).json({ message: `Albums with title '${title}' not found` });
+        return;
+      }
+      res.status(200).json(albums);
+    })
+    .catch((e) => {
+      console.error(e);
+      res.status(500).json({ message: `Error retrieving albums with title '${title}'` });
     });
 });
 
@@ -219,19 +248,3 @@ app.route('/api/albums/:id')
         res.status(500).json({ message: `Error deleting album with ID ${id}` });
       });
   });
-
-app.get('/api/albums/:title', (req, res) => {
-  const title = req.params.title;
-  Album.findOne({ title: title })
-    .then((albums) => {
-      if (!albums || albums.length === 0) {
-        res.status(404).json({ message: `Albums with title '${title}' not found` });
-        return;
-      }
-      res.status(200).json(albums);
-    })
-    .catch((e) => {
-      console.error(e);
-      res.status(500).json({ message: `Error retrieving albums with title '${title}'` });
-    });
-});
