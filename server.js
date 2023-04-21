@@ -1,7 +1,6 @@
 const express = require('express')
 const app = express()
 require("dotenv").config()
-const getAlbums = require("./database")
 const Album = require("./Album")
 const bodyParser = require('body-parser');
 
@@ -9,6 +8,10 @@ app.use(bodyParser.json());
 
 app.listen(process.env.PORT, () => {
   console.log("Server listening on port: " + process.env.PORT);
+})
+
+app.get("/", async function (req, res) {
+  res.redirect('/api/albums')
 })
 
 app.get('/api/albums', (req, res) => {
