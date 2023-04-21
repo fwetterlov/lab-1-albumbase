@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
 require("dotenv").config()
+const getAlbums = require("./database")
 const Album = require("./Album")
 const bodyParser = require('body-parser');
 
