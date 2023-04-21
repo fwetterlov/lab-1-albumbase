@@ -21,7 +21,7 @@ app.get('/api/albums', (req, res) => {
       let html = "";
       html += /*html*/`
       <div>
-        <h2>Albums</h2>
+        <h2>Albumbase</h2>
         <label for="title">Title:</label>
         <input type="text" id="title" name="title">
         <label for="artist">Artist:</label>
